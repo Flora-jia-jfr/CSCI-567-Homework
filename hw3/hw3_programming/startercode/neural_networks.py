@@ -39,15 +39,17 @@ class linear_layer:
         #   - self.params['W']
         #   - self.params['b']
         ###############################################################################################
-
-
+        mean, sd = 0, 0.1
+        self.params['W'] = np.random.normal(mean, sd, (input_D, output_D))
+        self.params['b'] = np.random.normal(mean, sd, (1, output_D))
 
         ###############################################################################################
         # TODO: Initialize the following two (gradients) with zeros
         #   - self.gradient['W']
         #   - self.gradient['b']
         ###############################################################################################
-
+        self.gradient['W'] = np.zeros((input_D, output_D))
+        self.gradient['b'] = np.zeros((1, output_D))
 
     def forward(self, X):
         """
@@ -63,6 +65,10 @@ class linear_layer:
         ################################################################################
         # TODO: Implement the linear forward pass. Store the result in forward_output  #
         ################################################################################
+        # X -- (n, input_D)
+        # W -- (input_D, output_D)
+        # b -- (1, output_D)
+        forward_output = np.dot(X, self.params['W']) + self.params['b']
 
         return forward_output
 
@@ -90,6 +96,8 @@ class linear_layer:
         #   - backward_output (N-by-input_D numpy array, the gradient of the mini-batch loss w.r.t. X)
         # only return backward_output, but need to compute self.gradient['W'] and self.gradient['b']
         #################################################################################################
+
+
 
         return backward_output
 
