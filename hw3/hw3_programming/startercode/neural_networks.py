@@ -68,8 +68,7 @@ class linear_layer:
         # X -- (n, input_D)
         # W -- (input_D, output_D)
         # b -- (1, output_D)
-        forward_output = np.dot(X, self.params['W']) + self.params['b']
-
+        forward_output = np.matmul(X, self.params['W']) + self.params['b']
         return forward_output
 
     def backward(self, X, grad):
@@ -96,9 +95,9 @@ class linear_layer:
         #   - backward_output (N-by-input_D numpy array, the gradient of the mini-batch loss w.r.t. X)
         # only return backward_output, but need to compute self.gradient['W'] and self.gradient['b']
         #################################################################################################
-
-
-
+        self.gradient['W'] = np.matmul(X.T, grad)
+        self.gradient['b'] = np.array([np.sum(grad, axis=0)])
+        backward_output = np.matmul(grad, self.params['W'].T)
         return backward_output
 
 
@@ -129,7 +128,7 @@ class relu:
         ################################################################################
         # TODO: Implement the relu forward pass. Store the result in forward_output    #
         ################################################################################
-
+        forward_output = np.maximum(0, X)
         return forward_output
 
     def backward(self, X, grad):
@@ -149,7 +148,7 @@ class relu:
         # TODO: Implement the backward pass
         # You can use the mask created in the forward step.
         ####################################################################################################
-
+        backward_output = np.multiply(grad, np.where(X <= 0, 0, 1))
         return backward_output
 
 
@@ -167,6 +166,7 @@ def miniBatchGradientDescent(model, _learning_rate):
                 # TODO: update the model parameter module.params[key] by a step of gradient descent.
                 # Note again that the gradient is stored in g already.
                 ####################################################################################
+                module.params[key] = np.subtract(module.params[key], np.multiply(_learning_rate, g))
 
     return model
 
@@ -188,7 +188,8 @@ def backward_pass(model, x, a1, h1, a2, y):
     # TODO: Call the backward methods of every layer in the model in reverse order.
     # We have given the first and last backward calls (above and below this TODO block).
     ######################################################################################
-
+    grad_h1 = model['L2'].backward(h1, grad_a2)
+    grad_a1 = model['nonlinear1'].backward(a1, grad_h1)
     grad_x = model['L1'].backward(x, grad_a1)
 
 
@@ -273,6 +274,11 @@ def gradient_checker(DataSet, model):
         # Take one forward pass with w - epsilon
         # Refer to the lecture notes for the exact equation for computing the approximate gradient
         ######################################################################################
+        model[layer_name].params[param_name] -= 2*epsilon
+        _, _, _, f_w_subtract_epsilon = forward_pass(model, x, y)
+
+        approximate_gradient = (f_w_add_epsilon - f_w_subtract_epsilon) / (2 * epsilon_value)
+        grad = grad.flat[0]
 
         print("Check the gradient of %s in the %s layer from backpropagation: %f and from approximation: %f"
               % (param_name, layer_name, grad, approximate_gradient))
