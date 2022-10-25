@@ -280,6 +280,9 @@ def gradient_checker(DataSet, model):
         approximate_gradient = (f_w_add_epsilon - f_w_subtract_epsilon) / (2 * epsilon_value)
         grad = grad.flat[0]
 
+        # revert back to the normal gradient for the model
+        model[layer_name].params[param_name] += epsilon
+
         print("Check the gradient of %s in the %s layer from backpropagation: %f and from approximation: %f"
               % (param_name, layer_name, grad, approximate_gradient))
 
